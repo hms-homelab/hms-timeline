@@ -1,6 +1,7 @@
 # hms-timeline
 
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-%23FFDD00.svg?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/aamat09)
+[![Build](https://github.com/hms-homelab/hms-timeline/actions/workflows/build-timeline.yml/badge.svg)](https://github.com/hms-homelab/hms-timeline/actions)
 
 Security camera timeline viewer for Home Assistant. Built with Angular + C++ (Drogon).
 
