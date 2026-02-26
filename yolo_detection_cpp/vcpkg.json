@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "yolo-detection-cpp",
+  "version": "1.0.0",
+  "description": "YOLO Detection Service - C++ implementation",
+  "dependencies": [
+    "spdlog",
+    "yaml-cpp",
+    "nlohmann-json",
+    "libpqxx",
+    "catch2",
+    "drogon"
+  ]
+}

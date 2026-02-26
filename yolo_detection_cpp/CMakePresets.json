@@ -1,0 +1,62 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "vcpkg",
+      "description": "Build using vcpkg for all dependencies",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      }
+    },
+    {
+      "name": "vcpkg-release",
+      "inherits": "vcpkg",
+      "displayName": "Release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "system-deps",
+      "description": "Build using system-installed Debian packages (no vcpkg) — use on host",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "hidden": false
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "vcpkg"
+    },
+    {
+      "name": "release",
+      "configurePreset": "vcpkg-release"
+    },
+    {
+      "name": "timeline",
+      "configurePreset": "vcpkg",
+      "targets": ["yolo_timeline"]
+    },
+    {
+      "name": "tests",
+      "configurePreset": "vcpkg",
+      "targets": ["shared_tests", "timeline_tests"]
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "default",
+      "configurePreset": "vcpkg",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

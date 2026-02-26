@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+.pytest_cache/
+
+# Logs
+logs/
+*.log
+*.pid
+
+# Secrets and credentials (never commit these)
+.secrets
+credentials.txt
+# Root-level config files contain real credentials — copy from *.example
+/config.yaml
+/go2rtc.yaml
+
+# YOLO models (large files)
+*.pt
+models/*.pt
+
+# Recordings and snapshots (large media files)
+events/
+snapshots/
+
+# Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.vscode/
+
+# C++ build artifacts
+yolo_detection_cpp/build/
+yolo_detection_cpp/vcpkg_installed/
+
+# ha-addon replaced by yolo-timeline/
+ha-addon/
+
+# Pre-built binary in yolo-timeline (built by CI)
+yolo-timeline/yolo_timeline
+yolo-timeline/static/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.backup
+*.bak
+*.before_*
+*.old
+api_server.py.backup*
+event_recorder.py.backup*
+
+# Documentation backups (keep only current docs)
+*_OLD.md

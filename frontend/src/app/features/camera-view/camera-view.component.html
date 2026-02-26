@@ -1,0 +1,131 @@
+<div class="min-h-screen bg-gray-900 text-white">
+  @if (cameras().length === 0) {
+    <app-loading-spinner message="Loading cameras..."></app-loading-spinner>
+  } @else {
+    <!-- Camera Tabs (Sticky Header) -->
+    <div class="sticky top-0 z-50 bg-gray-900 border-b border-gray-700">
+      <app-camera-tabs
+        [cameras]="cameras()"
+        [selectedCamera]="selectedCamera()"
+        (cameraChange)="onCameraChange($event)">
+      </app-camera-tabs>
+    </div>
+
+    @if (selectedCamera()) {
+      <!-- Single Video Player Area (16:9 aspect ratio) -->
+      <div class="relative aspect-video bg-black">
+        <!-- Live View Mode -->
+        <div
+          class="relative w-full h-full bg-black flex items-center justify-center"
+          [class.hidden]="viewMode() !== 'live'">
+          @if (selectedCamera()!.connected) {
+            <!-- Live Snapshot (refreshes via timestamp) -->
+            <img
+              [src]="getLiveSnapshotUrl()"
+              [alt]="selectedCamera()!.name + ' live view'"
+              class="max-w-full max-h-full object-contain" />
+
+            <!-- Live Indicator -->
+            <div class="absolute top-4 right-4 px-3 py-1 bg-red-600 rounded-full text-white text-sm font-medium flex items-center gap-2">
+              <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+              LIVE
+            </div>
+
+            <!-- Camera Name -->
+            <div class="absolute bottom-4 left-4 px-3 py-1 bg-black/70 rounded text-white text-sm">
+              {{ selectedCamera()!.name }}
+            </div>
+          } @else {
+            <!-- Camera Offline -->
+            <div class="text-center text-gray-400">
+              <svg class="w-16 h-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+              </svg>
+              <p class="font-medium">Camera Offline</p>
+              <p class="text-sm mt-1">{{ selectedCamera()!.name }}</p>
+            </div>
+          }
+        </div>
+
+        <!-- Recording Playback Mode -->
+        <div
+          class="relative w-full h-full bg-black"
+          [class.hidden]="viewMode() !== 'recording' || !selectedRecordingUrl()">
+          <!-- Back to Live Button -->
+          <button
+            type="button"
+            class="absolute top-4 left-4 z-10 px-4 py-2 bg-gray-800/90 hover:bg-gray-700 rounded-lg text-white text-sm font-medium transition-colors"
+            (click)="onBackToLive()">
+            ← Back to Live
+          </button>
+
+          <!-- Video Player -->
+          <video
+            #videoPlayer
+            class="w-full h-full"
+            [src]="selectedRecordingUrl() || ''"
+            controls
+            autoplay
+            (error)="onVideoError()">
+            Your browser does not support the video tag.
+          </video>
+
+          <!-- Error Message (if video fails to load) -->
+          @if (videoError()) {
+            <div class="absolute inset-0 flex items-center justify-center bg-black/80">
+              <div class="text-center text-gray-300 p-8">
+                <svg class="w-16 h-16 mx-auto mb-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <h3 class="text-lg font-medium mb-2">Recording Not Available</h3>
+                <p class="text-sm text-gray-400 mb-4">
+                  This recording file no longer exists.<br>
+                  It may have been automatically cleaned up.
+                </p>
+                <button
+                  type="button"
+                  class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm"
+                  (click)="onBackToLive()">
+                  Return to Live View
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Date Picker -->
+      <div class="p-4 border-b border-gray-700 bg-gray-800">
+        <app-date-picker
+          [selectedDate]="selectedDate()"
+          (dateChange)="onDateChange($event)">
+        </app-date-picker>
+      </div>
+
+      <!-- Timeline -->
+      <div class="p-4 border-b border-gray-700 bg-gray-800 overflow-x-auto">
+        <app-timeline
+          [events]="events()"
+          [selectedDate]="selectedDate()"
+          [selectedEventId]="selectedEventId()"
+          (eventSelect)="onEventSelect($event)">
+        </app-timeline>
+      </div>
+
+      <!-- Event List -->
+      <div class="p-4 space-y-4 bg-gray-900">
+        @if (events().length === 0) {
+          <div class="text-center py-12 text-gray-400">
+            <p>No events found for this date</p>
+          </div>
+        } @else {
+          <app-event-list
+            [events]="events()"
+            [selectedEventId]="selectedEventId()"
+            (eventPlay)="onEventSelect($event)">
+          </app-event-list>
+        }
+      </div>
+    }
+  }
+</div>

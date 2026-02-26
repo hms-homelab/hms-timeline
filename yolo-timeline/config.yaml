@@ -1,0 +1,39 @@
+name: "YOLO Detection Timeline"
+description: "Security camera timeline viewer - live snapshots, event history, and recordings"
+version: "1.0.0"
+slug: "yolo_timeline"
+url: "https://github.com/hms-homelab/yolo-detection"
+arch:
+  - amd64
+ingress: true
+ingress_port: 8080
+panel_icon: "mdi:cctv"
+panel_title: "CCTV Timeline"
+homeassistant_api: false
+hassio_api: true
+init: false
+
+image: "ghcr.io/hms-homelab/yolo-timeline"
+
+options:
+  db_host: "192.168.1.XX"
+  db_port: 5432
+  db_user: "your_db_user"
+  db_password: "your_db_password"
+  db_name: "ai_context"
+  detection_service_url: "http://192.168.1.XX:8000"
+  events_dir: "/media/cctv"
+  snapshots_dir: "/media/snapshots"
+
+schema:
+  db_host: str
+  db_port: int
+  db_user: str
+  db_password: str
+  db_name: str
+  detection_service_url: str
+  events_dir: str
+  snapshots_dir: str
+
+map:
+  - media:rw

@@ -1,0 +1,36 @@
+services:
+  yolo-timeline:
+    build:
+      context: ../..
+      dockerfile: yolo_detection_cpp/docker/timeline/Dockerfile
+    image: ghcr.io/aamat/yolo-timeline:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - /mnt/ssd/events:/mnt/ssd/events:ro
+      - /mnt/ssd/snapshots:/mnt/ssd/snapshots:ro
+      - ../../config.yaml:/app/config/config.yaml:ro
+    restart: unless-stopped
+    depends_on:
+      - go2rtc
+
+  # Future: yolo-detection service
+  # yolo-detection:
+  #   image: ghcr.io/aamat/yolo-detection:latest
+  #   runtime: nvidia
+  #   volumes:
+  #     - /mnt/ssd/events:/mnt/ssd/events
+  #     - /mnt/ssd/snapshots:/mnt/ssd/snapshots
+  #     - ../../config.yaml:/app/config/config.yaml
+  #   network_mode: host
+  #   restart: unless-stopped
+
+  go2rtc:
+    image: alexxit/go2rtc
+    ports:
+      - "8554:8554"
+      - "1984:1984"
+      - "8555:8555"
+    volumes:
+      - ../../go2rtc.yaml:/config/go2rtc.yaml:ro
+    restart: unless-stopped
