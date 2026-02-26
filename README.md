@@ -1,5 +1,7 @@
 # hms-timeline
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-%23FFDD00.svg?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/aamat09)
+
 Security camera timeline viewer for Home Assistant. Built with Angular + C++ (Drogon).
 
 ## Features
@@ -62,3 +64,10 @@ cmake --build build --target yolo_timeline
 # Run with config
 ./build/services/timeline/yolo_timeline --config config.yaml
 ```
+---
+
+## ☕ Support
+
+If this project is useful to you, consider buying me a coffee!
+
+[![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/aamat09)
