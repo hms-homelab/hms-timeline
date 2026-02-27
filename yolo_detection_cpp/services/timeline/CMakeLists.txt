@@ -7,10 +7,11 @@ add_executable(yolo_timeline
 
 target_include_directories(yolo_timeline PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_BINARY_DIR}/generated
 )
 
 target_link_libraries(yolo_timeline PRIVATE
-    yolo_shared
+    hms_shared
     Drogon::Drogon
 )
 
@@ -21,10 +22,11 @@ if(BUILD_TESTS)
 
     target_include_directories(timeline_tests PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_BINARY_DIR}/generated
     )
 
     target_link_libraries(timeline_tests PRIVATE
-        yolo_shared
+        hms_shared
         Drogon::Drogon
         Catch2::Catch2WithMain
     )

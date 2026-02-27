@@ -28,6 +28,14 @@
         "CMAKE_BUILD_TYPE": "Debug"
       },
       "hidden": false
+    },
+    {
+      "name": "local-shared",
+      "inherits": "system-deps",
+      "displayName": "Local hms-shared (dev)",
+      "cacheVariables": {
+        "FETCHCONTENT_SOURCE_DIR_HMS_SHARED": "/opt/yolo_detection/hms-shared"
+      }
     }
   ],
   "buildPresets": [
@@ -47,7 +55,7 @@
     {
       "name": "tests",
       "configurePreset": "vcpkg",
-      "targets": ["shared_tests", "timeline_tests"]
+      "targets": ["timeline_tests"]
     }
   ],
   "testPresets": [
