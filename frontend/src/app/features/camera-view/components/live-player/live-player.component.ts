@@ -10,7 +10,6 @@ import {
 import { CommonModule } from '@angular/common';
 import { Camera } from '../../../../core/models/camera.model';
 import { CameraService } from '../../../../core/services/camera.service';
-import { environment } from '../../../../../environments/environment';
 
 /**
  * Live camera view using refreshing snapshots

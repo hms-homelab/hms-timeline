@@ -9,6 +9,7 @@ import { CameraService } from '../../core/services/camera.service';
 import { EventsService } from '../../core/services/events.service';
 import { Camera } from '../../core/models/camera.model';
 import { DetectionEvent } from '../../core/models/event.model';
+import { toRelativeMediaUrl } from '../../core/utils/media-url';
 
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { ErrorMessageComponent } from '../../shared/components/error-message/error-message.component';
@@ -142,9 +143,7 @@ export class CameraViewComponent implements OnInit, OnDestroy {
 
   onEventSelect(event: DetectionEvent) {
     if (event.recording_url) {
-      // Extract relative path from recording URL
-      const url = new URL(event.recording_url);
-      const relativePath = url.pathname.replace(/^\//, ''); // relative: events/filename.mp4
+      const relativePath = toRelativeMediaUrl(event.recording_url, 'events');
 
       // Update state to show recording
       this.selectedEventId.set(event.event_id);
