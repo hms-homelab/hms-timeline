@@ -1,8 +1,9 @@
 # hms-timeline
 
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-%23FFDD00.svg?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/aamat09)
-[![Build](https://github.com/hms-homelab/hms-timeline/actions/workflows/build-timeline.yml/badge.svg)](https://github.com/hms-homelab/hms-timeline/actions)
-[![GHCR](https://img.shields.io/badge/ghcr.io-yolo--timeline-blue?logo=docker)](https://github.com/hms-homelab/hms-timeline/pkgs/container/yolo-timeline)
+[\![Docker](https://ghcr-badge.egpl.dev/hms-homelab/yolo-timeline/size)](https://github.com/hms-homelab/hms-timeline/pkgs/container/yolo-timeline)
+[\![Build](https://github.com/hms-homelab/hms-timeline/actions/workflows/build-timeline.yml/badge.svg)](https://github.com/hms-homelab/hms-timeline/actions)
+[\![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[\![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-%23FFDD00.svg?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/aamat09)
 
 Security camera timeline viewer for Home Assistant. Built with Angular + C++ (Drogon).
 
@@ -29,6 +30,12 @@ PostgreSQL (events)  +  /mnt/ssd/{events,snapshots}
 The C++ service reads from the same PostgreSQL database and filesystem
 that the detection engine writes to. No coupling between services.
 
+## Docker Quick Start
+
+```bash
+docker pull ghcr.io/hms-homelab/yolo-timeline:latest
+```
+
 ## Home Assistant Add-on
 
 Add this repository to HA:
@@ -44,14 +51,6 @@ Configure:
 - `events_dir` — path to MP4 recordings (e.g. `/media/cctv`)
 - `snapshots_dir` — path to JPEG snapshots (e.g. `/media/snapshots`)
 
-## Container Image
-
-```
-ghcr.io/hms-homelab/yolo-timeline:latest
-```
-
-Built automatically on push via GitHub Actions.
-
 ## Local Development
 
 ```bash
@@ -66,10 +65,9 @@ cmake --build build --target yolo_timeline
 # Run with config
 ./build/services/timeline/yolo_timeline --config config.yaml
 ```
+
 ---
 
-## ☕ Support
+## Support
 
-If this project is useful to you, consider buying me a coffee!
-
-[![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/aamat09)
+[\![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/aamat09)
