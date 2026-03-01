@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     uuid-dev libbrotli-dev libsqlite3-dev \
     libhiredis-dev default-libmysqlclient-dev \
     libssl-dev libkrb5-dev \
+    libpaho-mqttpp-dev libpaho-mqtt-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
@@ -42,6 +43,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libspdlog1.15 libfmt10 \
     libuuid1 libbrotli1 libsqlite3-0 libhiredis1.1.0 libmariadb3 \
     libssl3 libkrb5-3 \
+    libpaho-mqttpp3-1 libpaho-mqtt1.3 \
     jq curl \
     && rm -rf /var/lib/apt/lists/*
 
