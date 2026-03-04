@@ -6,11 +6,13 @@ FROM debian:trixie AS cpp-builder
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential cmake ninja-build git pkg-config ca-certificates \
     libdrogon-dev \
-    libpqxx-dev \
+    libjsoncpp-dev uuid-dev zlib1g-dev \
+    libpqxx-dev libpq-dev \
     libspdlog-dev \
     libyaml-cpp-dev \
     nlohmann-json3-dev \
     libcurl4-openssl-dev \
+    libsqlite3-dev libbrotli-dev libhiredis-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
