@@ -1,3 +1,5 @@
+ARG BUILD_FROM=debian:trixie-slim
+
 # ── Stage 1: Build C++ timeline service ────────────────────────────────────────
 FROM debian:trixie AS cpp-builder
 
@@ -30,7 +32,6 @@ COPY frontend/ ./
 RUN npx ng build --configuration production --base-href /
 
 # ── Stage 3: Runtime ──────────────────────────────────────────────────────────
-ARG BUILD_FROM=debian:trixie-slim
 FROM ${BUILD_FROM}
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
