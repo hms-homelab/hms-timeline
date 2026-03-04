@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     nlohmann-json3-dev \
     libcurl4-openssl-dev \
     libsqlite3-dev libbrotli-dev libhiredis-dev \
+    default-libmysqlclient-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
