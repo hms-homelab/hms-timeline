@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DetectionEvent } from '../../../../core/models/event.model';
+import { DetectionEvent, PeriodicSnapshot } from '../../../../core/models/event.model';
 
 /**
  * 24-hour timeline component
@@ -16,14 +16,26 @@ import { DetectionEvent } from '../../../../core/models/event.model';
 
       <div class="flex overflow-x-auto pb-4">
         @for (hour of hours; track hour) {
-          <div class="flex-shrink-0 w-20 border-l border-gray-600 relative">
+          <div class="flex-shrink-0 w-36 border-l border-gray-600 relative">
             <!-- Hour Label -->
             <div class="text-xs text-gray-500 px-2">
               {{ formatHour(hour) }}
             </div>
 
-            <!-- Event Markers -->
+            <!-- Event + Snapshot Markers -->
             <div class="relative h-12 mt-2">
+              <!-- Periodic snapshot dots (gray, smaller) -->
+              @for (snap of getSnapshotsForHour(hour); track snap.snapshot_id) {
+                <button
+                  type="button"
+                  class="absolute top-1/2 -translate-y-1/2 rounded-full bg-gray-500 hover:scale-150 transition-all z-0 cursor-pointer"
+                  style="width: 6px; height: 6px;"
+                  [style.left.%]="getSnapshotPosition(snap)"
+                  [title]="getSnapshotTitle(snap)"
+                  (click)="onSnapshotClick(snap)">
+                </button>
+              }
+              <!-- Motion event dots (blue, larger) -->
               @for (event of getEventsForHour(hour); track event.event_id) {
                 <button
                   type="button"
@@ -57,9 +69,11 @@ import { DetectionEvent } from '../../../../core/models/event.model';
 })
 export class TimelineComponent {
   @Input() events: DetectionEvent[] = [];
+  @Input() periodicSnapshots: PeriodicSnapshot[] = [];
   @Input() selectedDate!: Date;
   @Input() selectedEventId: string | null = null;
   @Output() eventSelect = new EventEmitter<DetectionEvent>();
+  @Output() snapshotSelect = new EventEmitter<PeriodicSnapshot>();
 
   hours = Array.from({ length: 24 }, (_, i) => i);
 
@@ -87,5 +101,26 @@ export class TimelineComponent {
 
   onEventClick(event: DetectionEvent) {
     this.eventSelect.emit(event);
+  }
+
+  getSnapshotsForHour(hour: number): PeriodicSnapshot[] {
+    return this.periodicSnapshots.filter(snap => {
+      const d = new Date(snap.captured_at);
+      return d.getHours() === hour;
+    });
+  }
+
+  getSnapshotPosition(snap: PeriodicSnapshot): number {
+    const d = new Date(snap.captured_at);
+    return (d.getMinutes() / 60) * 100;
+  }
+
+  getSnapshotTitle(snap: PeriodicSnapshot): string {
+    const time = new Date(snap.captured_at).toLocaleTimeString();
+    return `${time} - Periodic snapshot${snap.ai_context ? ': ' + snap.ai_context : ''}`;
+  }
+
+  onSnapshotClick(snap: PeriodicSnapshot) {
+    this.snapshotSelect.emit(snap);
   }
 }

@@ -10,12 +10,14 @@ DB_USER=$(jq -r '.db_user' "$OPTIONS")
 DB_PASSWORD=$(jq -r '.db_password' "$OPTIONS")
 DB_NAME=$(jq -r '.db_name' "$OPTIONS")
 DETECTION_URL=$(jq -r '.detection_service_url' "$OPTIONS")
+OLLAMA_URL=$(jq -r '.ollama_url // "http://192.168.2.5:11434"' "$OPTIONS")
 EVENTS_DIR=$(jq -r '.events_dir' "$OPTIONS")
 SNAPSHOTS_DIR=$(jq -r '.snapshots_dir' "$OPTIONS")
 
 echo "[yolo-timeline] Starting up"
 echo "[yolo-timeline] DB: ${DB_HOST}:${DB_PORT}/${DB_NAME}"
 echo "[yolo-timeline] Detection service: ${DETECTION_URL}"
+echo "[yolo-timeline] Ollama: ${OLLAMA_URL}"
 echo "[yolo-timeline] Events: ${EVENTS_DIR} | Snapshots: ${SNAPSHOTS_DIR}"
 
 # Patch index.html with correct base href for HA ingress
@@ -53,6 +55,7 @@ timeline:
   events_dir: "${EVENTS_DIR}"
   snapshots_dir: "${SNAPSHOTS_DIR}"
   detection_service_url: "${DETECTION_URL}"
+  ollama_url: "${OLLAMA_URL}"
   cors_origins: []
 
 logging:

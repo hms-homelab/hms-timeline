@@ -47,3 +47,37 @@ export interface TimelineData {
   date: string;
   hours: TimelineHour[];
 }
+
+export interface PeriodicSnapshot {
+  type: 'snapshot';
+  snapshot_id: number;
+  camera_id: string;
+  camera_name: string;
+  captured_at: string;
+  snapshot_url: string;
+  thumbnail_url?: string;
+  ai_context?: string;
+}
+
+export interface SearchResult {
+  type: 'event' | 'snapshot';
+  id: string;
+  camera_id: string;
+  camera_name: string;
+  timestamp: string;
+  recording_url?: string;
+  snapshot_url?: string;
+  total_detections: number;
+  duration_seconds?: number;
+  detected_classes?: string;
+  ai_context?: string;
+  rank?: number;
+  similarity?: number;
+}
+
+export interface SearchResponse {
+  events: SearchResult[];
+  count: number;
+  search_mode: 'fts' | 'semantic';
+  query: string;
+}

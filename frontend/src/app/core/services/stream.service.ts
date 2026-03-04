@@ -18,7 +18,7 @@ export class StreamService {
    * @returns Snapshot URL
    */
   getLiveSnapshotUrl(cameraId: string): string {
-    return `api/cameras/${cameraId}/snapshot`;
+    return `${this.apiUrl}/api/cameras/${cameraId}/snapshot`;
   }
 
   /**
@@ -27,7 +27,7 @@ export class StreamService {
    * @returns Event snapshot URL
    */
   getEventSnapshotUrl(filename: string): string {
-    return `snapshots/${filename}`;
+    return `${this.apiUrl}/snapshots/${filename}`;
   }
 
   /**
@@ -36,6 +36,6 @@ export class StreamService {
    * @returns Event recording URL
    */
   getRecordingUrl(filename: string): string {
-    return `events/${filename}`;
+    return `${this.apiUrl}/events/${filename}`;
   }
 }

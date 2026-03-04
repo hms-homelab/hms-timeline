@@ -4,12 +4,32 @@
 #include <nlohmann/json.hpp>
 #include <filesystem>
 #include <algorithm>
+#include <unordered_map>
 
 using namespace drogon;
 using nlohmann::json;
 namespace fs = std::filesystem;
 
 namespace yolo {
+
+static std::string getMimeType(const std::string& filename) {
+    static const std::unordered_map<std::string, std::string> mime_types = {
+        {".mp4",  "video/mp4"},
+        {".webm", "video/webm"},
+        {".mkv",  "video/x-matroska"},
+        {".avi",  "video/x-msvideo"},
+        {".mov",  "video/quicktime"},
+        {".jpg",  "image/jpeg"},
+        {".jpeg", "image/jpeg"},
+        {".png",  "image/png"},
+        {".gif",  "image/gif"},
+        {".webp", "image/webp"},
+    };
+    auto ext = fs::path(filename).extension().string();
+    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+    auto it = mime_types.find(ext);
+    return it != mime_types.end() ? it->second : "application/octet-stream";
+}
 
 void MediaController::setEventsDir(std::string dir) {
     events_dir_ = std::move(dir);
@@ -49,6 +69,7 @@ void MediaController::serveFile(const std::string& dir,
 
     // Use Drogon's built-in file response for efficient serving (supports range requests)
     auto resp = HttpResponse::newFileResponse(filepath.string());
+    resp->setContentTypeString(getMimeType(filename));
     resp->addHeader("Access-Control-Allow-Origin", "*");
     callback(resp);
 }

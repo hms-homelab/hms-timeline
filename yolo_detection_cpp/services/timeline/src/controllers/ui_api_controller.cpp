@@ -1,4 +1,5 @@
 #include "controllers/ui_api_controller.h"
+#include "embedding_client.h"
 #include "api_queries.h"
 #include "config_manager.h"
 #include "time_utils.h"
@@ -19,6 +20,10 @@ void UiApiController::setDbPool(std::shared_ptr<DbPool> pool) {
 
 void UiApiController::setDetectionServiceUrl(std::string url) {
     detection_service_url_ = std::move(url);
+}
+
+void UiApiController::setOllamaUrl(std::string url) {
+    ollama_url_ = std::move(url);
 }
 
 void UiApiController::getEvents(const HttpRequestPtr& req,
@@ -234,6 +239,124 @@ void UiApiController::getCameraSnapshot(const HttpRequestPtr& req,
 
     spdlog::debug("Snapshot proxy: {} bytes for {}", body.size(), camera_id);
     callback(resp);
+}
+
+void UiApiController::searchEvents(const HttpRequestPtr& req,
+                                    std::function<void(const HttpResponsePtr&)>&& callback) {
+    auto q = req->getOptionalParameter<std::string>("q");
+    if (!q || q->empty()) {
+        callback(makeJsonResponse(
+            nlohmann::json{{"error", "q parameter is required"}}, k400BadRequest));
+        return;
+    }
+
+    api_queries::SearchParams params;
+    params.query = *q;
+    params.camera_id = req->getOptionalParameter<std::string>("camera_id");
+    params.start_date = req->getOptionalParameter<std::string>("start");
+    params.end_date = req->getOptionalParameter<std::string>("end");
+
+    auto mode_param = req->getOptionalParameter<std::string>("mode");
+    params.mode = mode_param.value_or("auto");
+
+    auto limit_str = req->getOptionalParameter<std::string>("limit");
+    if (limit_str) {
+        try { params.limit = std::stoi(*limit_str); } catch (...) {}
+        if (params.limit <= 0 || params.limit > 200) params.limit = 50;
+    }
+
+    auto classes_str = req->getOptionalParameter<std::string>("classes");
+    if (classes_str && !classes_str->empty()) {
+        std::istringstream iss(*classes_str);
+        std::string cls;
+        while (std::getline(iss, cls, ',')) {
+            auto start = cls.find_first_not_of(' ');
+            if (start != std::string::npos) {
+                params.class_filter.push_back(cls.substr(start));
+            }
+        }
+    }
+
+    spdlog::debug("GET /api/search q='{}' mode={} limit={}", params.query, params.mode, params.limit);
+
+    // Try FTS first
+    if (params.mode == "fts" || params.mode == "auto") {
+        auto fts_result = api_queries::search_events_fts(*db_pool_, params);
+        int count = fts_result.value("count", 0);
+
+        // If auto mode and FTS returned enough results, return them
+        if (params.mode == "fts" || count >= 3) {
+            callback(makeJsonResponse(fts_result));
+            return;
+        }
+
+        // Auto mode with <3 FTS results: try semantic search
+        if (!ollama_url_.empty()) {
+            hms::EmbeddingClient emb_client(ollama_url_, "nomic-embed-text");
+            auto query_embedding = emb_client.embed(params.query);
+
+            if (!query_embedding.empty()) {
+                auto sem_result = api_queries::search_events_semantic(
+                    *db_pool_, params, query_embedding);
+                int sem_count = sem_result.value("count", 0);
+
+                if (sem_count > count) {
+                    callback(makeJsonResponse(sem_result));
+                    return;
+                }
+            }
+        }
+
+        // Return whatever FTS gave us
+        callback(makeJsonResponse(fts_result));
+        return;
+    }
+
+    // Semantic-only mode
+    if (params.mode == "semantic") {
+        if (ollama_url_.empty()) {
+            callback(makeJsonResponse(
+                nlohmann::json{{"error", "Ollama URL not configured for semantic search"}},
+                k503ServiceUnavailable));
+            return;
+        }
+
+        hms::EmbeddingClient emb_client(ollama_url_, "nomic-embed-text");
+        auto query_embedding = emb_client.embed(params.query);
+
+        if (query_embedding.empty()) {
+            callback(makeJsonResponse(
+                nlohmann::json{{"error", "Failed to generate query embedding"}},
+                k503ServiceUnavailable));
+            return;
+        }
+
+        auto result = api_queries::search_events_semantic(*db_pool_, params, query_embedding);
+        callback(makeJsonResponse(result));
+        return;
+    }
+
+    callback(makeJsonResponse(
+        nlohmann::json{{"error", "Invalid mode: " + params.mode}}, k400BadRequest));
+}
+
+void UiApiController::getPeriodicSnapshots(const HttpRequestPtr& req,
+                                            std::function<void(const HttpResponsePtr&)>&& callback) {
+    auto camera_id = req->getOptionalParameter<std::string>("camera_id");
+    if (!camera_id) {
+        callback(makeJsonResponse(
+            nlohmann::json{{"error", "camera_id parameter is required"}}, k400BadRequest));
+        return;
+    }
+
+    auto date = req->getOptionalParameter<std::string>("date");
+    std::string date_str = date.value_or(
+        time_utils::to_date_string(std::chrono::system_clock::now()));
+
+    spdlog::debug("GET /api/snapshots camera_id={} date={}", *camera_id, date_str);
+
+    auto snapshots = api_queries::get_periodic_snapshots(*db_pool_, *camera_id, date_str);
+    callback(makeJsonResponse(nlohmann::json{{"snapshots", snapshots}, {"count", static_cast<int>(snapshots.size())}}));
 }
 
 void UiApiController::getHealth(const HttpRequestPtr& req,

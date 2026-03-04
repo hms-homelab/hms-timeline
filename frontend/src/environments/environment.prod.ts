@@ -1,5 +1,5 @@
 // Production environment
 export const environment = {
   production: true,
-  apiUrl: '',
+  apiUrl: '',  // Use relative URLs (same origin as UI)
 };

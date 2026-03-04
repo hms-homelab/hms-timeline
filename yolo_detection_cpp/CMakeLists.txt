@@ -30,7 +30,8 @@ find_package(Drogon CONFIG REQUIRED)            # target: Drogon::Drogon
 # libpqxx ships only a pkg-config file on Debian — no cmake config
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(pqxx REQUIRED IMPORTED_TARGET libpqxx)
-# Creates: PkgConfig::pqxx
+pkg_check_modules(libcurl REQUIRED IMPORTED_TARGET libcurl)
+# Creates: PkgConfig::pqxx, PkgConfig::libcurl
 
 # ── Shared library (via FetchContent) ────────────────────────────────────────
 

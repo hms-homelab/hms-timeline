@@ -1,6 +1,7 @@
 add_executable(yolo_timeline
     src/main.cpp
     src/cors_filter.cpp
+    src/embedding_client.cpp
     src/controllers/ui_api_controller.cpp
     src/controllers/media_controller.cpp
 )
@@ -13,6 +14,7 @@ target_include_directories(yolo_timeline PRIVATE
 target_link_libraries(yolo_timeline PRIVATE
     hms_shared
     Drogon::Drogon
+    PkgConfig::libcurl
 )
 
 if(BUILD_TESTS)

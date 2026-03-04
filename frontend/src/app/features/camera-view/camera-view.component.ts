@@ -8,7 +8,7 @@ import { combineLatest } from 'rxjs';
 import { CameraService } from '../../core/services/camera.service';
 import { EventsService } from '../../core/services/events.service';
 import { Camera } from '../../core/models/camera.model';
-import { DetectionEvent } from '../../core/models/event.model';
+import { DetectionEvent, SearchResult, PeriodicSnapshot } from '../../core/models/event.model';
 import { toRelativeMediaUrl } from '../../core/utils/media-url';
 
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
@@ -17,6 +17,7 @@ import { CameraTabsComponent } from './components/camera-tabs/camera-tabs.compon
 import { DatePickerComponent } from './components/date-picker/date-picker.component';
 import { TimelineComponent } from './components/timeline/timeline.component';
 import { EventListComponent } from './components/event-list/event-list.component';
+import { SearchBarComponent, SearchQuery } from './components/search-bar/search-bar.component';
 
 /**
  * Main container component for camera view
@@ -32,7 +33,8 @@ import { EventListComponent } from './components/event-list/event-list.component
     CameraTabsComponent,
     DatePickerComponent,
     TimelineComponent,
-    EventListComponent
+    EventListComponent,
+    SearchBarComponent
   ],
   templateUrl: './camera-view.component.html',
   styleUrls: ['./camera-view.component.scss']
@@ -47,7 +49,7 @@ export class CameraViewComponent implements OnInit, OnDestroy {
   // Writable Signals (User Input)
   selectedCamera = signal<Camera | null>(null);
   selectedDate = signal<Date>(new Date());
-  viewMode = signal<'live' | 'recording'>('live');
+  viewMode = signal<'live' | 'recording' | 'snapshot'>('live');
   selectedRecordingUrl = signal<string | null>(null);
   selectedEventId = signal<string | null>(null);
   videoError = signal<boolean>(false);
@@ -59,6 +61,13 @@ export class CameraViewComponent implements OnInit, OnDestroy {
   // Events signal (will be loaded when camera/date changes)
   events = signal<DetectionEvent[]>([]);
   isLoadingEvents = signal<boolean>(false);
+
+  // Search mode
+  isSearchMode = signal(false);
+  searchResults = signal<SearchResult[]>([]);
+  isSearchLoading = signal(false);
+  searchInfo = signal<{ mode: string; count: number } | null>(null);
+  periodicSnapshots = signal<PeriodicSnapshot[]>([]);
 
   // Live snapshot refresh
   private refreshInterval?: number;
@@ -89,6 +98,7 @@ export class CameraViewComponent implements OnInit, OnDestroy {
         if (cameraChanged) {
           this.selectedCamera.set(camera);
           this.loadEvents();
+          this.loadPeriodicSnapshots();
           // Reset to live view when switching cameras
           this.viewMode.set('live');
           this.selectedRecordingUrl.set(null);
@@ -138,7 +148,71 @@ export class CameraViewComponent implements OnInit, OnDestroy {
 
   onDateChange(date: Date) {
     this.selectedDate.set(date);
-    this.loadEvents(); // Load events for new date
+    this.loadEvents();
+    this.loadPeriodicSnapshots();
+  }
+
+  onSearch(searchQuery: SearchQuery) {
+    this.isSearchMode.set(true);
+    this.isSearchLoading.set(true);
+    this.searchInfo.set(null);
+
+    this.eventsService.searchEvents(searchQuery.query, {
+      classes: searchQuery.classes.length > 0 ? searchQuery.classes.join(',') : undefined
+    }).subscribe({
+      next: (response) => {
+        this.searchResults.set(response.events);
+        this.searchInfo.set({ mode: response.search_mode, count: response.count });
+        this.isSearchLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Search error:', error);
+        this.searchResults.set([]);
+        this.isSearchLoading.set(false);
+      }
+    });
+  }
+
+  onSearchClear() {
+    this.isSearchMode.set(false);
+    this.searchResults.set([]);
+    this.searchInfo.set(null);
+  }
+
+  onSearchResultSelect(result: SearchResult) {
+    if (result.type === 'event' && result.recording_url) {
+      const relativePath = toRelativeMediaUrl(result.recording_url, 'events');
+      this.selectedEventId.set(result.id);
+      this.selectedRecordingUrl.set(relativePath);
+      this.viewMode.set('recording');
+      this.videoError.set(false);
+    } else if (result.snapshot_url) {
+      // Show snapshot in viewer
+      const relativePath = toRelativeMediaUrl(result.snapshot_url, 'snapshots');
+      this.selectedEventId.set(result.id);
+      this.selectedRecordingUrl.set(relativePath);
+      this.viewMode.set('snapshot');
+      this.videoError.set(false);
+    }
+  }
+
+  onSnapshotSelect(snapshot: PeriodicSnapshot) {
+    const relativePath = toRelativeMediaUrl(snapshot.snapshot_url, 'snapshots');
+    this.selectedEventId.set(String(snapshot.snapshot_id));
+    this.selectedRecordingUrl.set(relativePath);
+    this.viewMode.set('snapshot');
+    this.videoError.set(false);
+  }
+
+  private loadPeriodicSnapshots() {
+    const camera = this.selectedCamera();
+    const date = this.selectedDate();
+    if (!camera) return;
+
+    this.eventsService.getPeriodicSnapshots(camera.id, date).subscribe({
+      next: (snapshots) => this.periodicSnapshots.set(snapshots),
+      error: () => this.periodicSnapshots.set([])
+    });
   }
 
   onEventSelect(event: DetectionEvent) {
@@ -173,6 +247,20 @@ export class CameraViewComponent implements OnInit, OnDestroy {
       return '';
     }
     return `api/cameras/${camera.id}/snapshot?t=${this.lastUpdate()}`;
+  }
+
+  formatTimestamp(ts: string): string {
+    const date = new Date(ts);
+    return date.toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric'
+    }) + ' ' + date.toLocaleTimeString('en-US', {
+      hour: 'numeric', minute: '2-digit', hour12: true
+    });
+  }
+
+  getSearchResultSnapshotUrl(result: SearchResult): string {
+    if (!result.snapshot_url) return '';
+    return toRelativeMediaUrl(result.snapshot_url, 'snapshots');
   }
 
   ngOnDestroy() {

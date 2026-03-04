@@ -16,6 +16,8 @@ public:
     ADD_METHOD_TO(UiApiController::getTimeline, "/api/timeline", drogon::Get, "yolo::CorsFilter");
     ADD_METHOD_TO(UiApiController::getCamerasStatus, "/api/cameras/status", drogon::Get, "yolo::CorsFilter");
     ADD_METHOD_TO(UiApiController::getCameraSnapshot, "/api/cameras/{camera_id}/snapshot", drogon::Get, "yolo::CorsFilter");
+    ADD_METHOD_TO(UiApiController::searchEvents, "/api/search", drogon::Get, "yolo::CorsFilter");
+    ADD_METHOD_TO(UiApiController::getPeriodicSnapshots, "/api/snapshots", drogon::Get, "yolo::CorsFilter");
     ADD_METHOD_TO(UiApiController::getHealth, "/health", drogon::Get);
     METHOD_LIST_END
 
@@ -41,6 +43,14 @@ public:
                            std::function<void(const drogon::HttpResponsePtr&)>&& callback,
                            const std::string& camera_id);
 
+    /// GET /api/search?q=...&classes=...&camera_id=...&start=...&end=...&limit=50&mode=auto
+    void searchEvents(const drogon::HttpRequestPtr& req,
+                      std::function<void(const drogon::HttpResponsePtr&)>&& callback);
+
+    /// GET /api/snapshots?camera_id=X&date=YYYY-MM-DD
+    void getPeriodicSnapshots(const drogon::HttpRequestPtr& req,
+                              std::function<void(const drogon::HttpResponsePtr&)>&& callback);
+
     /// GET /health
     void getHealth(const drogon::HttpRequestPtr& req,
                    std::function<void(const drogon::HttpResponsePtr&)>&& callback);
@@ -51,9 +61,13 @@ public:
     /// Set the detection service URL for snapshot proxying
     static void setDetectionServiceUrl(std::string url);
 
+    /// Set the Ollama URL for query-time embeddings
+    static void setOllamaUrl(std::string url);
+
 private:
     static inline std::shared_ptr<DbPool> db_pool_;
     static inline std::string detection_service_url_;
+    static inline std::string ollama_url_;
 };
 
 } // namespace yolo

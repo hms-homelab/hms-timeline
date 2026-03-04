@@ -5,7 +5,9 @@ import {
   DetectionEvent,
   EventsResponse,
   EventDetail,
-  TimelineData
+  TimelineData,
+  SearchResponse,
+  PeriodicSnapshot
 } from '../models/event.model';
 
 /**
@@ -85,6 +87,46 @@ export class EventsService {
       camera_id: cameraId,
       date: dateStr
     });
+  }
+  /**
+   * Search events and periodic snapshots
+   */
+  searchEvents(
+    query: string,
+    options?: {
+      classes?: string;
+      cameraId?: string;
+      start?: string;
+      end?: string;
+      limit?: number;
+      mode?: string;
+    }
+  ): Observable<SearchResponse> {
+    const params: Record<string, any> = { q: query };
+    if (options?.classes) params['classes'] = options.classes;
+    if (options?.cameraId) params['camera_id'] = options.cameraId;
+    if (options?.start) params['start'] = options.start;
+    if (options?.end) params['end'] = options.end;
+    if (options?.limit) params['limit'] = options.limit;
+    if (options?.mode) params['mode'] = options.mode;
+
+    return this.api.get<SearchResponse>('api/search', params);
+  }
+
+  /**
+   * Get periodic snapshots for a camera and date
+   */
+  getPeriodicSnapshots(
+    cameraId: string,
+    date: Date
+  ): Observable<PeriodicSnapshot[]> {
+    const dateStr = date.toISOString().split('T')[0];
+    return this.api.get<{ snapshots: PeriodicSnapshot[]; count: number }>('api/snapshots', {
+      camera_id: cameraId,
+      date: dateStr
+    }).pipe(
+      map(response => response.snapshots)
+    );
   }
 }
 
