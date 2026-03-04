@@ -1,0 +1,18 @@
+# Build artifacts
+yolo_detection_cpp/build/
+frontend/dist/
+frontend/node_modules/
+frontend/.angular/
+frontend/e2e/
+
+# Git
+.git
+.github
+
+# IDE
+.vscode
+.idea
+
+# Misc
+*.md
+LICENSE
