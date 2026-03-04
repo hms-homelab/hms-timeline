@@ -7,7 +7,10 @@
     "build": "ng build",
     "build:prod": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:e2e": "npx playwright test",
+    "test:e2e:headed": "npx playwright test --headed",
+    "test:e2e:debug": "npx playwright test --debug"
   },
   "private": true,
   "dependencies": {
@@ -29,6 +32,7 @@
     "@angular-devkit/build-angular": "^17.3.0",
     "@angular/cli": "^17.3.0",
     "@angular/compiler-cli": "^17.3.0",
+    "@playwright/test": "^1.58.2",
     "@types/node": "^20.11.24",
     "autoprefixer": "^10.4.18",
     "postcss": "^8.4.35",

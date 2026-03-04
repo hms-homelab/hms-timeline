@@ -1,6 +1,6 @@
 name: "YOLO Detection Timeline"
 description: "Security camera timeline viewer - live snapshots, event history, and recordings"
-version: "1.1.1"
+version: "1.2.2"
 slug: "yolo_timeline"
 url: "https://github.com/aamat/yolo_detection"
 arch:
@@ -20,6 +20,7 @@ options:
   db_password: "maestro_postgres_2026_secure"
   db_name: "ai_context"
   detection_service_url: "http://192.168.2.5:8000"
+  ollama_url: "http://192.168.2.5:11434"
   events_dir: "/media/cctv"
   snapshots_dir: "/media/snapshots"
 
@@ -30,6 +31,7 @@ schema:
   db_password: str
   db_name: str
   detection_service_url: str
+  ollama_url: str
   events_dir: str
   snapshots_dir: str
 

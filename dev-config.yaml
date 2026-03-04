@@ -1,0 +1,23 @@
+database:
+  host: "192.168.2.15"
+  port: 5432
+  user: "maestro"
+  password: "maestro_postgres_2026_secure"
+  database: "ai_context"
+  pool_size: 4
+
+timeline:
+  host: "0.0.0.0"
+  port: 8080
+  static_files_path: "/opt/yolo_detection/hms-timeline/frontend/dist/browser"
+  events_dir: "/mnt/ssd/events"
+  snapshots_dir: "/mnt/ssd/snapshots"
+  detection_service_url: "http://localhost:8000"
+  ollama_url: "http://localhost:11434"
+  cors_origins: ["http://localhost:4200"]
+
+logging:
+  level: "DEBUG"
+  file: ""
+  max_bytes: 10485760
+  backup_count: 5

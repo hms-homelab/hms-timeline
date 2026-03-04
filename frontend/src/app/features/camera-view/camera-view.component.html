@@ -60,15 +60,17 @@
           </button>
 
           <!-- Video Player -->
-          <video
-            #videoPlayer
-            class="w-full h-full"
-            [src]="selectedRecordingUrl() || ''"
-            controls
-            autoplay
-            (error)="onVideoError()">
-            Your browser does not support the video tag.
-          </video>
+          @if (selectedRecordingUrl() && viewMode() === 'recording') {
+            <video
+              #videoPlayer
+              class="w-full h-full"
+              [src]="selectedRecordingUrl()!"
+              controls
+              autoplay
+              (error)="onVideoError()">
+              Your browser does not support the video tag.
+            </video>
+          }
 
           <!-- Error Message (if video fails to load) -->
           @if (videoError()) {
@@ -92,40 +94,169 @@
             </div>
           }
         </div>
-      </div>
 
-      <!-- Date Picker -->
-      <div class="p-4 border-b border-gray-700 bg-gray-800">
-        <app-date-picker
-          [selectedDate]="selectedDate()"
-          (dateChange)="onDateChange($event)">
-        </app-date-picker>
-      </div>
+        <!-- Snapshot View Mode -->
+        <div
+          class="relative w-full h-full bg-black flex items-center justify-center"
+          [class.hidden]="viewMode() !== 'snapshot' || !selectedRecordingUrl()">
+          <!-- Back to Live Button -->
+          <button
+            type="button"
+            class="absolute top-4 left-4 z-10 px-4 py-2 bg-gray-800/90 hover:bg-gray-700 rounded-lg text-white text-sm font-medium transition-colors"
+            (click)="onBackToLive()">
+            ← Back to Live
+          </button>
 
-      <!-- Timeline -->
-      <div class="p-4 border-b border-gray-700 bg-gray-800 overflow-x-auto">
-        <app-timeline
-          [events]="events()"
-          [selectedDate]="selectedDate()"
-          [selectedEventId]="selectedEventId()"
-          (eventSelect)="onEventSelect($event)">
-        </app-timeline>
-      </div>
+          <!-- Snapshot Image -->
+          @if (selectedRecordingUrl()) {
+            <img
+              [src]="selectedRecordingUrl()!"
+              alt="Periodic snapshot"
+              class="max-w-full max-h-full object-contain" />
+          }
 
-      <!-- Event List -->
-      <div class="p-4 space-y-4 bg-gray-900">
-        @if (events().length === 0) {
-          <div class="text-center py-12 text-gray-400">
-            <p>No events found for this date</p>
+          <!-- Snapshot Indicator -->
+          <div class="absolute top-4 right-4 px-3 py-1 bg-purple-600 rounded-full text-white text-sm font-medium flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            SNAPSHOT
           </div>
-        } @else {
-          <app-event-list
-            [events]="events()"
-            [selectedEventId]="selectedEventId()"
-            (eventPlay)="onEventSelect($event)">
-          </app-event-list>
-        }
+        </div>
       </div>
+
+      <!-- Search Bar -->
+      <div class="p-4 border-b border-gray-700 bg-gray-800">
+        <app-search-bar
+          (search)="onSearch($event)"
+          (clear)="onSearchClear()">
+        </app-search-bar>
+      </div>
+
+      @if (!isSearchMode()) {
+        <!-- Date Picker (hidden in search mode) -->
+        <div class="p-4 border-b border-gray-700 bg-gray-800">
+          <app-date-picker
+            [selectedDate]="selectedDate()"
+            (dateChange)="onDateChange($event)">
+          </app-date-picker>
+        </div>
+
+        <!-- Timeline with snapshot dots -->
+        <div class="p-4 border-b border-gray-700 bg-gray-800 overflow-x-auto">
+          <app-timeline
+            [events]="events()"
+            [periodicSnapshots]="periodicSnapshots()"
+            [selectedDate]="selectedDate()"
+            [selectedEventId]="selectedEventId()"
+            (eventSelect)="onEventSelect($event)"
+            (snapshotSelect)="onSnapshotSelect($event)">
+          </app-timeline>
+        </div>
+
+        <!-- Event List -->
+        <div class="p-4 space-y-4 bg-gray-900">
+          @if (events().length === 0) {
+            <div class="text-center py-12 text-gray-400">
+              <p>No events found for this date</p>
+            </div>
+          } @else {
+            <app-event-list
+              [events]="events()"
+              [selectedEventId]="selectedEventId()"
+              (eventPlay)="onEventSelect($event)">
+            </app-event-list>
+          }
+        </div>
+      } @else {
+        <!-- Search Results -->
+        <div class="p-4 space-y-4 bg-gray-900">
+          @if (isSearchLoading()) {
+            <app-loading-spinner message="Searching..."></app-loading-spinner>
+          } @else if (searchResults().length === 0) {
+            <div class="text-center py-12 text-gray-400">
+              <svg class="w-12 h-12 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <p>No results found</p>
+            </div>
+          } @else {
+            @if (searchInfo()) {
+              <div class="text-xs text-gray-400 mb-2">
+                {{ searchInfo()!.mode === 'semantic' ? 'AI match' : 'Text match' }} · {{ searchInfo()!.count }} results across all cameras
+              </div>
+            }
+            <div class="space-y-4">
+              @for (result of searchResults(); track result.id) {
+                <!-- Search Result Card -->
+                <div
+                  class="w-full text-left flex items-center gap-4 p-3 rounded-xl transition-colors cursor-pointer border"
+                  [ngClass]="result.type === 'snapshot' ? 'bg-purple-950 border-purple-800' : 'bg-gray-800 border-gray-700'"
+                  (click)="onSearchResultSelect(result)">
+
+                  <!-- Left: Info -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 text-sm">
+                      @if (result.type === 'event') {
+                        <svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                        </svg>
+                      } @else {
+                        <svg class="w-5 h-5 text-purple-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      }
+                      <div class="flex flex-col">
+                        <span class="text-gray-300 font-medium">{{ result.camera_name }}</span>
+                        <span class="text-xs text-gray-500">{{ formatTimestamp(result.timestamp) }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Detected Classes (events only) -->
+                    @if (result.detected_classes) {
+                      <div class="mt-2 flex flex-wrap gap-1">
+                        @for (cls of result.detected_classes.split(', '); track cls) {
+                          <span class="px-2 py-0.5 bg-blue-950 text-blue-300 rounded text-xs">{{ cls }}</span>
+                        }
+                      </div>
+                    }
+
+                    @if (result.type === 'snapshot') {
+                      <span class="inline-block mt-2 px-2 py-0.5 bg-purple-950 text-purple-300 rounded text-xs">Periodic snapshot</span>
+                    }
+
+                    <!-- AI Context -->
+                    @if (result.ai_context) {
+                      <p class="text-sm text-gray-300 italic mt-2 truncate">
+                        "{{ result.ai_context }}"
+                      </p>
+                    }
+                  </div>
+
+                  <!-- Right: Thumbnail -->
+                  <div class="flex-shrink-0 w-32 h-24 bg-gray-900 rounded-lg overflow-hidden border"
+                       [ngClass]="result.type === 'snapshot' ? 'border-purple-800' : 'border-gray-700'">
+                    @if (result.snapshot_url) {
+                      <img
+                        [src]="getSearchResultSnapshotUrl(result)"
+                        alt="Search result"
+                        class="w-full h-full object-cover" />
+                    } @else {
+                      <div class="w-full h-full flex items-center justify-center text-gray-700">
+                        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
     }
   }
 </div>

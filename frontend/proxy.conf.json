@@ -1,16 +1,16 @@
 {
   "/api": {
-    "target": "http://localhost:8000",
+    "target": "http://localhost:8080",
     "secure": false,
     "changeOrigin": true
   },
   "/events": {
-    "target": "http://localhost:8000",
+    "target": "http://localhost:8080",
     "secure": false,
     "changeOrigin": true
   },
   "/snapshots": {
-    "target": "http://localhost:8000",
+    "target": "http://localhost:8080",
     "secure": false,
     "changeOrigin": true
   }

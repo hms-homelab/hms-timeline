@@ -100,6 +100,7 @@ int main(int argc, char* argv[]) {
         // Configure controllers with shared dependencies
         yolo::UiApiController::setDbPool(db_pool);
         yolo::UiApiController::setDetectionServiceUrl(config.timeline.detection_service_url);
+        yolo::UiApiController::setOllamaUrl(config.timeline.ollama_url);
         yolo::MediaController::setEventsDir(config.timeline.events_dir);
         yolo::MediaController::setSnapshotsDir(config.timeline.snapshots_dir);
         yolo::CorsFilter::setAllowedOrigins(config.timeline.cors_origins);

@@ -4,7 +4,7 @@ import { CameraViewComponent } from './features/camera-view/camera-view.componen
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'patio',
+    redirectTo: '/patio',
     pathMatch: 'full'
   },
   {
@@ -14,6 +14,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'patio'
+    redirectTo: '/patio'
   }
 ];
