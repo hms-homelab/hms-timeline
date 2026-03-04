@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libcurl4-openssl-dev \
     libsqlite3-dev libbrotli-dev libhiredis-dev \
     default-libmysqlclient-dev \
+    libpaho-mqtt-dev libpaho-mqttpp-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
@@ -45,6 +46,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libuuid1 libbrotli1 libsqlite3-0 libhiredis1.1.0 libmariadb3 \
     libssl3 libkrb5-3 \
     libcurl4t64 \
+    libpaho-mqtt1.3 libpaho-mqttpp3-1 \
     jq curl \
     && rm -rf /var/lib/apt/lists/*
 
