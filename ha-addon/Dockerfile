@@ -1,41 +1,4 @@
 ARG BUILD_FROM=debian:trixie-slim
-
-# ── Stage 1: Build C++ timeline service ────────────────────────────────────────
-FROM debian:trixie AS cpp-builder
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential cmake ninja-build git pkg-config ca-certificates \
-    libdrogon-dev \
-    libjsoncpp-dev uuid-dev zlib1g-dev \
-    libpqxx-dev libpq-dev \
-    libspdlog-dev \
-    libyaml-cpp-dev \
-    nlohmann-json3-dev \
-    libcurl4-openssl-dev \
-    libsqlite3-dev libbrotli-dev libhiredis-dev \
-    default-libmysqlclient-dev \
-    libpaho-mqtt-dev libpaho-mqttpp-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /build
-COPY yolo_detection_cpp/ yolo_detection_cpp/
-
-RUN cmake -S yolo_detection_cpp -B yolo_detection_cpp/build \
-    -G Ninja \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_TESTS=OFF \
-    && cmake --build yolo_detection_cpp/build --target yolo_timeline
-
-# ── Stage 2: Build Angular frontend ───────────────────────────────────────────
-FROM node:20-slim AS frontend-builder
-
-WORKDIR /app
-COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci
-COPY frontend/ ./
-RUN npx ng build --configuration production --base-href /
-
-# ── Stage 3: Runtime ──────────────────────────────────────────────────────────
 FROM ${BUILD_FROM}
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -52,15 +15,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-COPY --from=cpp-builder \
-    /build/yolo_detection_cpp/build/services/timeline/yolo_timeline \
-    /usr/local/bin/yolo_timeline
+# Pre-built binary (compiled on NVR and copied to add-on dir)
+COPY yolo_timeline /usr/local/bin/yolo_timeline
 RUN chmod +x /usr/local/bin/yolo_timeline
 
-COPY --from=frontend-builder /app/dist/browser/ /app/static/
+# Pre-built Angular frontend (compiled on NVR and copied to add-on dir)
+COPY static/ /app/static/
 RUN cp /app/static/index.html /app/static/index.html.template
 
-COPY ha-addon/run.sh /run.sh
+COPY run.sh /run.sh
 RUN chmod a+x /run.sh
 
 CMD ["/run.sh"]

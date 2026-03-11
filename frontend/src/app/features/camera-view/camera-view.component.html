@@ -25,10 +25,30 @@
               [alt]="selectedCamera()!.name + ' live view'"
               class="max-w-full max-h-full object-contain" />
 
-            <!-- Live Indicator -->
-            <div class="absolute top-4 right-4 px-3 py-1 bg-red-600 rounded-full text-white text-sm font-medium flex items-center gap-2">
-              <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-              LIVE
+            <!-- Live Indicator + Pause Toggle -->
+            <div class="absolute top-4 right-4 flex items-center gap-2">
+              <button
+                type="button"
+                class="px-3 py-1 rounded-full text-white text-sm font-medium flex items-center gap-2 transition-colors"
+                [ngClass]="selectedCamera()!.paused ? 'bg-yellow-600 hover:bg-yellow-500' : 'bg-gray-700/80 hover:bg-gray-600'"
+                (click)="onTogglePause()"
+                [title]="selectedCamera()!.paused ? 'Resume detection' : 'Pause detection'">
+                @if (selectedCamera()!.paused) {
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+                  </svg>
+                  PAUSED
+                } @else {
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                  </svg>
+                  PAUSE
+                }
+              </button>
+              <div class="px-3 py-1 bg-red-600 rounded-full text-white text-sm font-medium flex items-center gap-2">
+                <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                LIVE
+              </div>
             </div>
 
             <!-- Camera Name -->

@@ -2,10 +2,6 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Camera } from '../../../../core/models/camera.model';
 
-/**
- * Camera selector tabs component
- * Displays horizontal tabs for switching between cameras
- */
 @Component({
   selector: 'app-camera-tabs',
   standalone: true,
@@ -22,9 +18,16 @@ import { Camera } from '../../../../core/models/camera.model';
           [class.text-gray-400]="selectedCamera?.id !== camera.id"
           [class.hover:text-white]="selectedCamera?.id !== camera.id"
           (click)="onCameraClick(camera)">
-          <div class="font-medium">{{ camera.name }}</div>
+          <div class="font-medium flex items-center justify-center gap-2">
+            {{ camera.name }}
+            @if (camera.paused) {
+              <span class="w-2 h-2 bg-yellow-500 rounded-full" title="Detection paused"></span>
+            }
+          </div>
           @if (!camera.connected) {
             <div class="text-xs text-red-500 mt-1">Offline</div>
+          } @else if (camera.paused) {
+            <div class="text-xs text-yellow-500 mt-1">Paused</div>
           }
         </button>
       }

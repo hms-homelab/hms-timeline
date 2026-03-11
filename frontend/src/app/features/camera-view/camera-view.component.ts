@@ -227,6 +227,21 @@ export class CameraViewComponent implements OnInit, OnDestroy {
     }
   }
 
+  onTogglePause() {
+    const camera = this.selectedCamera();
+    if (!camera) return;
+    const newPaused = !camera.paused;
+    this.cameraService.setPaused(camera.id, newPaused).subscribe({
+      next: (result) => {
+        // Update the camera object in place
+        this.selectedCamera.set({ ...camera, paused: result.paused });
+        // Also update in the cameras list (for tabs indicator)
+        // We don't need to — cameras$ is a one-shot observable. Just trigger a refresh.
+      },
+      error: (err) => console.error('Failed to toggle pause:', err)
+    });
+  }
+
   onBackToLive() {
     // Reset to live view
     this.viewMode.set('live');
