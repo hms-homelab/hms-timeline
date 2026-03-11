@@ -4,6 +4,7 @@ export interface Camera {
   connected: boolean;
   buffer_size: number;
   last_event_time?: string;
+  paused?: boolean;
 }
 
 export interface CameraStatus {

@@ -1,38 +1,35 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, forkJoin, of } from 'rxjs';
+import { map, switchMap, catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { Camera, CameraStatus } from '../models/camera.model';
 
-/**
- * Service for camera-related operations
- * Fetches camera status, health, and configuration
- */
 @Injectable({
   providedIn: 'root'
 })
 export class CameraService {
   private api = inject(ApiService);
 
-  /**
-   * Get enhanced camera status with last event time
-   */
   getCameraStatus(): Observable<Camera[]> {
     return this.api.get<CameraStatus>('api/cameras/status').pipe(
-      map(response => response.cameras)
+      map(response => response.cameras),
+      switchMap(cameras => {
+        if (cameras.length === 0) return of(cameras);
+        const pauseChecks = cameras.map(cam =>
+          this.api.get<{ paused: boolean }>(`api/cameras/${cam.id}/paused`).pipe(
+            map(r => ({ ...cam, paused: r.paused })),
+            catchError(() => of({ ...cam, paused: false }))
+          )
+        );
+        return forkJoin(pauseChecks);
+      })
     );
   }
 
-  /**
-   * Get system health check (includes camera buffer stats)
-   */
   getHealth(): Observable<any> {
     return this.api.get('health');
   }
 
-  /**
-   * Get camera list (simpler endpoint without last event)
-   */
   getCameras(): Observable<Camera[]> {
     return this.api.get<{ cameras: Camera[] }>('cameras').pipe(
       map(response => response.cameras.map(cam => ({
@@ -42,5 +39,9 @@ export class CameraService {
         buffer_size: cam.buffer_size
       })))
     );
+  }
+
+  setPaused(cameraId: string, paused: boolean): Observable<{ camera_id: string; paused: boolean }> {
+    return this.api.post(`api/cameras/${cameraId}/paused`, { paused });
   }
 }

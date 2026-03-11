@@ -359,6 +359,119 @@ void UiApiController::getPeriodicSnapshots(const HttpRequestPtr& req,
     callback(makeJsonResponse(nlohmann::json{{"snapshots", snapshots}, {"count", static_cast<int>(snapshots.size())}}));
 }
 
+/// Helper: proxy an HTTP request to the detection service, return raw response body + status
+static std::pair<int, std::string> proxyToDetection(
+    const std::string& detection_service_url,
+    const std::string& method,
+    const std::string& path,
+    const std::string& body = "")
+{
+    std::string url = detection_service_url;
+    if (url.substr(0, 7) == "http://") url = url.substr(7);
+    std::string host = url, port = "80";
+    auto colon = url.rfind(':');
+    if (colon != std::string::npos) {
+        host = url.substr(0, colon);
+        port = url.substr(colon + 1);
+    }
+
+    struct addrinfo hints{}, *res = nullptr;
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    if (getaddrinfo(host.c_str(), port.c_str(), &hints, &res) != 0 || !res) {
+        return {502, R"({"error":"Detection service unavailable"})"};
+    }
+
+    int fd = ::socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    struct timeval tv{4, 0};
+    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+
+    if (fd < 0 || ::connect(fd, res->ai_addr, res->ai_addrlen) != 0) {
+        freeaddrinfo(res);
+        if (fd >= 0) ::close(fd);
+        return {502, R"({"error":"Detection service unavailable"})"};
+    }
+    freeaddrinfo(res);
+
+    std::string request = method + " " + path + " HTTP/1.0\r\n"
+                          "Host: " + host + "\r\n"
+                          "Content-Type: application/json\r\n";
+    if (!body.empty()) {
+        request += "Content-Length: " + std::to_string(body.size()) + "\r\n";
+    }
+    request += "Connection: close\r\n\r\n";
+    if (!body.empty()) request += body;
+
+    ::send(fd, request.c_str(), request.size(), 0);
+
+    std::string raw;
+    raw.reserve(4096);
+    char buf[4096];
+    ssize_t n;
+    while ((n = ::recv(fd, buf, sizeof(buf), 0)) > 0) {
+        raw.append(buf, n);
+    }
+    ::close(fd);
+
+    if (raw.empty()) return {502, R"({"error":"Empty response from detection service"})"};
+
+    auto header_end = raw.find("\r\n\r\n");
+    if (header_end == std::string::npos) return {502, R"({"error":"Malformed response"})"};
+
+    std::string headers = raw.substr(0, header_end);
+    std::string resp_body = raw.substr(header_end + 4);
+
+    int status_code = 502;
+    if (headers.size() >= 12) {
+        try { status_code = std::stoi(headers.substr(9, 3)); } catch (...) {}
+    }
+
+    return {status_code, resp_body};
+}
+
+void UiApiController::getCameraPaused(const HttpRequestPtr& req,
+                                       std::function<void(const HttpResponsePtr&)>&& callback,
+                                       const std::string& camera_id) {
+    if (detection_service_url_.empty()) {
+        callback(makeJsonResponse(
+            nlohmann::json{{"error", "Detection service URL not configured"}},
+            k503ServiceUnavailable));
+        return;
+    }
+
+    auto [status, body] = proxyToDetection(
+        detection_service_url_, "GET", "/api/cameras/" + camera_id + "/paused");
+
+    auto resp = HttpResponse::newHttpResponse();
+    resp->setStatusCode(static_cast<HttpStatusCode>(status));
+    resp->setContentTypeCode(CT_APPLICATION_JSON);
+    resp->setBody(std::move(body));
+    callback(resp);
+}
+
+void UiApiController::setCameraPaused(const HttpRequestPtr& req,
+                                       std::function<void(const HttpResponsePtr&)>&& callback,
+                                       const std::string& camera_id) {
+    if (detection_service_url_.empty()) {
+        callback(makeJsonResponse(
+            nlohmann::json{{"error", "Detection service URL not configured"}},
+            k503ServiceUnavailable));
+        return;
+    }
+
+    auto [status, body] = proxyToDetection(
+        detection_service_url_, "POST",
+        "/api/cameras/" + camera_id + "/paused",
+        std::string(req->body()));
+
+    auto resp = HttpResponse::newHttpResponse();
+    resp->setStatusCode(static_cast<HttpStatusCode>(status));
+    resp->setContentTypeCode(CT_APPLICATION_JSON);
+    resp->setBody(std::move(body));
+    callback(resp);
+}
+
 void UiApiController::getHealth(const HttpRequestPtr& req,
                                  std::function<void(const HttpResponsePtr&)>&& callback) {
     nlohmann::json health;
