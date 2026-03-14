@@ -5,8 +5,6 @@ on:
     branches: [main]
     paths:
       - 'ha-addon/**'
-      - 'yolo_detection_cpp/**'
-      - 'frontend/**'
   workflow_dispatch:
 
 env:
@@ -29,7 +27,13 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version from CMake
+        id: version
+        run: |
+          VERSION=$(grep 'project.*VERSION' yolo_detection_cpp/CMakeLists.txt | grep -oP '\d+\.\d+\.\d+')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Extract metadata
         id: meta
@@ -39,7 +43,7 @@ jobs:
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,prefix=sha-
-            type=raw,value=1.2.2,enable={{is_default_branch}}
+            type=raw,value=${{ steps.version.outputs.version }},enable={{is_default_branch}}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -47,7 +51,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ha-addon
           file: ha-addon/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
