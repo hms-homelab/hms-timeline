@@ -12,7 +12,7 @@
 
 using namespace drogon;
 
-namespace yolo {
+namespace hms {
 
 void UiApiController::setDbPool(std::shared_ptr<DbPool> pool) {
     db_pool_ = std::move(pool);
@@ -491,4 +491,4 @@ void UiApiController::getHealth(const HttpRequestPtr& req,
     callback(makeJsonResponse(health));
 }
 
-} // namespace yolo
+} // namespace hms

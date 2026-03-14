@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-namespace yolo {
+namespace hms {
 
 /// CORS middleware filter for Drogon.
 /// Adds Access-Control-Allow-* headers to all responses and handles preflight OPTIONS requests.
@@ -21,4 +21,4 @@ private:
     static inline std::vector<std::string> allowed_origins_ = {"*"};
 };
 
-} // namespace yolo
+} // namespace hms

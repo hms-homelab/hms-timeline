@@ -4,22 +4,22 @@
 #include <memory>
 #include "db_pool.h"
 
-namespace yolo {
+namespace hms {
 
 /// REST API controller for the Angular Timeline UI.
 /// Ports the API endpoints from api_server.py that serve the frontend.
 class UiApiController : public drogon::HttpController<UiApiController> {
 public:
     METHOD_LIST_BEGIN
-    ADD_METHOD_TO(UiApiController::getEvents, "/api/events", drogon::Get, "yolo::CorsFilter");
-    ADD_METHOD_TO(UiApiController::getEventDetail, "/api/events/{event_id}", drogon::Get, "yolo::CorsFilter");
-    ADD_METHOD_TO(UiApiController::getTimeline, "/api/timeline", drogon::Get, "yolo::CorsFilter");
-    ADD_METHOD_TO(UiApiController::getCamerasStatus, "/api/cameras/status", drogon::Get, "yolo::CorsFilter");
-    ADD_METHOD_TO(UiApiController::getCameraSnapshot, "/api/cameras/{camera_id}/snapshot", drogon::Get, "yolo::CorsFilter");
-    ADD_METHOD_TO(UiApiController::searchEvents, "/api/search", drogon::Get, "yolo::CorsFilter");
-    ADD_METHOD_TO(UiApiController::getPeriodicSnapshots, "/api/snapshots", drogon::Get, "yolo::CorsFilter");
-    ADD_METHOD_TO(UiApiController::getCameraPaused, "/api/cameras/{camera_id}/paused", drogon::Get, "yolo::CorsFilter");
-    ADD_METHOD_TO(UiApiController::setCameraPaused, "/api/cameras/{camera_id}/paused", drogon::Post, "yolo::CorsFilter");
+    ADD_METHOD_TO(UiApiController::getEvents, "/api/events", drogon::Get, "hms::CorsFilter");
+    ADD_METHOD_TO(UiApiController::getEventDetail, "/api/events/{event_id}", drogon::Get, "hms::CorsFilter");
+    ADD_METHOD_TO(UiApiController::getTimeline, "/api/timeline", drogon::Get, "hms::CorsFilter");
+    ADD_METHOD_TO(UiApiController::getCamerasStatus, "/api/cameras/status", drogon::Get, "hms::CorsFilter");
+    ADD_METHOD_TO(UiApiController::getCameraSnapshot, "/api/cameras/{camera_id}/snapshot", drogon::Get, "hms::CorsFilter");
+    ADD_METHOD_TO(UiApiController::searchEvents, "/api/search", drogon::Get, "hms::CorsFilter");
+    ADD_METHOD_TO(UiApiController::getPeriodicSnapshots, "/api/snapshots", drogon::Get, "hms::CorsFilter");
+    ADD_METHOD_TO(UiApiController::getCameraPaused, "/api/cameras/{camera_id}/paused", drogon::Get, "hms::CorsFilter");
+    ADD_METHOD_TO(UiApiController::setCameraPaused, "/api/cameras/{camera_id}/paused", drogon::Post, "hms::CorsFilter");
     ADD_METHOD_TO(UiApiController::getHealth, "/health", drogon::Get);
     METHOD_LIST_END
 
@@ -82,4 +82,4 @@ private:
     static inline std::string ollama_url_;
 };
 
-} // namespace yolo
+} // namespace hms

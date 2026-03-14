@@ -17,7 +17,7 @@ namespace fs = std::filesystem;
 
 namespace {
 
-void setup_logging(const yolo::LoggingConfig& log_config) {
+void setup_logging(const hms::LoggingConfig& log_config) {
     std::vector<spdlog::sink_ptr> sinks;
     sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
 
@@ -80,14 +80,14 @@ std::string load_index_html(const std::string& static_abs, const std::string& in
 int main(int argc, char* argv[]) {
     try {
         auto config_path = find_config_path(argc, argv);
-        auto config = yolo::ConfigManager::load(config_path);
+        auto config = hms::ConfigManager::load(config_path);
 
         setup_logging(config.logging);
         spdlog::info("Starting yolo-timeline service v1.0.0");
         spdlog::info("Config: {}", config_path);
 
         // Database pool
-        yolo::DbPool::Config db_config{
+        hms::DbPool::Config db_config{
             .host = config.database.host,
             .port = config.database.port,
             .user = config.database.user,
@@ -95,15 +95,15 @@ int main(int argc, char* argv[]) {
             .database = config.database.database,
             .pool_size = config.database.pool_size,
         };
-        auto db_pool = std::make_shared<yolo::DbPool>(db_config);
+        auto db_pool = std::make_shared<hms::DbPool>(db_config);
 
         // Configure controllers with shared dependencies
-        yolo::UiApiController::setDbPool(db_pool);
-        yolo::UiApiController::setDetectionServiceUrl(config.timeline.detection_service_url);
-        yolo::UiApiController::setOllamaUrl(config.timeline.ollama_url);
-        yolo::MediaController::setEventsDir(config.timeline.events_dir);
-        yolo::MediaController::setSnapshotsDir(config.timeline.snapshots_dir);
-        yolo::CorsFilter::setAllowedOrigins(config.timeline.cors_origins);
+        hms::UiApiController::setDbPool(db_pool);
+        hms::UiApiController::setDetectionServiceUrl(config.timeline.detection_service_url);
+        hms::UiApiController::setOllamaUrl(config.timeline.ollama_url);
+        hms::MediaController::setEventsDir(config.timeline.events_dir);
+        hms::MediaController::setSnapshotsDir(config.timeline.snapshots_dir);
+        hms::CorsFilter::setAllowedOrigins(config.timeline.cors_origins);
 
         // Resolve static files path (absolute)
         std::string static_path = config.timeline.static_files_path;
