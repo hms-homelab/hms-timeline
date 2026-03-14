@@ -4,7 +4,7 @@
 
 using namespace drogon;
 
-namespace yolo {
+namespace hms {
 
 void CorsFilter::setAllowedOrigins(std::vector<std::string> origins) {
     allowed_origins_ = std::move(origins);
@@ -43,4 +43,4 @@ void CorsFilter::doFilter(const HttpRequestPtr& req,
     fccb();
 }
 
-} // namespace yolo
+} // namespace hms

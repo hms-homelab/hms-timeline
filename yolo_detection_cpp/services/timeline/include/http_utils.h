@@ -3,7 +3,7 @@
 #include <drogon/HttpResponse.h>
 #include <nlohmann/json.hpp>
 
-namespace yolo {
+namespace hms {
 
 /// Create a Drogon HTTP response with JSON body from an nlohmann::json object.
 /// Drogon's newHttpJsonResponse uses jsoncpp; this helper serialises via nlohmann.
@@ -18,4 +18,4 @@ inline drogon::HttpResponsePtr makeJsonResponse(
     return resp;
 }
 
-} // namespace yolo
+} // namespace hms

@@ -10,7 +10,7 @@ using namespace drogon;
 using nlohmann::json;
 namespace fs = std::filesystem;
 
-namespace yolo {
+namespace hms {
 
 static std::string getMimeType(const std::string& filename) {
     static const std::unordered_map<std::string, std::string> mime_types = {
@@ -88,4 +88,4 @@ void MediaController::serveSnapshot(const HttpRequestPtr& req,
     serveFile(snapshots_dir_, filename, std::move(callback));
 }
 
-} // namespace yolo
+} // namespace hms
