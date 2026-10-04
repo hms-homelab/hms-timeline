@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.4.1 (2026-10-04)
+
+### Changed
+- Bumped hms-shared dependency from v1.5.1 to v1.6.18. Picks up the `DbPool` fixes (a failed reconnect no longer leaks a pool slot, and missing connections are backfilled with backoff after a database outage). No source changes: the APIs this service uses are unchanged, and it does not use `MqttClient`.
+
 ## v1.2.2 (2026-03-04)
 
 ### Fixed
